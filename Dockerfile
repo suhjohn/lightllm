@@ -51,3 +51,38 @@ RUN pip install -r /lightllm/requirements.txt --no-cache-dir
 
 COPY . /lightllm
 RUN pip install -e /lightllm --no-cache-dir
+
+# Set the working directory
+WORKDIR /
+
+ADD ./src .
+ADD startup.sh .
+
+RUN pip install huggingface_hub
+
+# Prepare argument for the model and tokenizer
+ARG MODEL_NAME=""
+ENV MODEL_NAME=$MODEL_NAME
+ARG MODEL_REVISION="main"
+ENV MODEL_REVISION=$MODEL_REVISION
+ARG MODEL_BASE_PATH="/runpod-volume/"
+ENV MODEL_BASE_PATH=$MODEL_BASE_PATH
+ARG TOKENIZER=""
+ENV TOKENIZER=$TOKENIZER
+ARG STREAMING=""
+ENV STREAMING=$STREAMING
+ARG TP=""
+ENV TP=$TP
+ARG MAX_TOTAL_TOKEN_NUM=""
+ENV MAX_TOTAL_TOKEN_NUM=$MAX_TOTAL_TOKEN_NUM
+
+# Download the models
+RUN mkdir -p /model
+
+# Set environment variables
+ENV MODEL_NAME=$MODEL_NAME \
+    MODEL_REVISION=$MODEL_REVISION \
+    MODEL_BASE_PATH=$MODEL_BASE_PATH \
+    HUGGING_FACE_HUB_TOKEN=$HUGGING_FACE_HUB_TOKEN
+
+CMD ["bash", "startup.sh"]
